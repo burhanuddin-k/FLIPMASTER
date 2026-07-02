@@ -1,0 +1,102 @@
+/* ==========================================================================
+   FlipMaster — Animations
+   Keyframes + scroll-reveal utility classes used across the site.
+   Coin-flip specific keyframes are added in Phase 2 alongside coin.js.
+   ========================================================================== */
+
+@keyframes preloaderSpin {
+  0% {
+    transform: rotateY(0deg) scale(1);
+  }
+  50% {
+    transform: rotateY(180deg) scale(1.08);
+  }
+  100% {
+    transform: rotateY(360deg) scale(1);
+  }
+}
+
+@keyframes floatY {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.coin-idle {
+  animation: floatY 3.4s ease-in-out infinite;
+}
+
+/* Scroll-reveal: elements start hidden, ui.js toggles .in-view via IntersectionObserver */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-reveal].in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+[data-reveal="scale"] {
+  transform: scale(0.94);
+}
+
+[data-reveal="scale"].in-view {
+  transform: scale(1);
+}
+
+/* Stagger helper — apply data-reveal-delay="1..6" for children */
+[data-reveal-delay="1"] { transition-delay: 0.06s; }
+[data-reveal-delay="2"] { transition-delay: 0.12s; }
+[data-reveal-delay="3"] { transition-delay: 0.18s; }
+[data-reveal-delay="4"] { transition-delay: 0.24s; }
+[data-reveal-delay="5"] { transition-delay: 0.3s; }
+[data-reveal-delay="6"] { transition-delay: 0.36s; }
+
+/* Toast enter/exit */
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.toast {
+  animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* History item enter */
+@keyframes historyItemIn {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.history-item.new {
+  animation: historyItemIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

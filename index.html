@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FlipMaster — Every Flip Starts Here</title>
+  <meta name="description" content="FlipMaster is a premium coin-flip decision app with real-time statistics, streak tracking, and flip history." />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/animation.css" />
+  <link rel="stylesheet" href="css/responsive.css" />
+</head>
+<body>
+
+  <!-- Loading Spinner -->
+  <div id="preloader" aria-hidden="true">
+    <div class="preloader-coin">
+      <div class="preloader-coin-face"></div>
+    </div>
+  </div>
+
+  <!-- Skip link for accessibility -->
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <!-- Navigation -->
+  <header class="navbar" id="navbar">
+    <div class="container navbar-inner">
+      <a href="#top" class="logo" aria-label="FlipMaster home">
+        <span class="logo-mark">
+          <span class="logo-face gold">H</span>
+          <span class="logo-face silver">T</span>
+        </span>
+        <span class="logo-text">FlipMaster</span>
+      </a>
+
+      <nav class="nav-links" id="navLinks" aria-label="Primary">
+        <a href="#flip">Flip</a>
+        <a href="#stats">Stats</a>
+        <a href="#features">Features</a>
+        <a href="#about">About</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+
+      <div class="nav-actions">
+        <button id="themeToggle" class="icon-btn" aria-label="Toggle light and dark theme" title="Toggle theme">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+        <button id="muteToggle" class="icon-btn" aria-label="Mute or unmute sound" title="Mute sound">
+          <i class="fa-solid fa-volume-high"></i>
+        </button>
+        <button class="menu-toggle" id="menuToggle" aria-label="Open menu" aria-expanded="false" aria-controls="navLinks">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- Hero -->
+    <section class="hero" id="top">
+      <div class="hero-glow glow-gold" aria-hidden="true"></div>
+      <div class="hero-glow glow-silver" aria-hidden="true"></div>
+
+      <div class="container hero-inner">
+        <p class="eyebrow">Decision-making, decided</p>
+        <h1 class="hero-title">Every Flip <span class="hero-title-accent">Starts Here</span></h1>
+        <p class="hero-subtitle">
+          A precision coin flip with real physics, real statistics, and a history that remembers
+          every call. No app-store fluff — just the cleanest 50/50 you'll ever use.
+        </p>
+
+        <div class="hero-cta-row">
+          <a href="#flip" class="btn btn-primary">
+            <i class="fa-solid fa-coins"></i>
+            Start Flipping
+          </a>
+          <a href="#about" class="btn btn-ghost">Learn more</a>
+        </div>
+
+        <div class="hero-trust-row" id="heroTrustRow">
+          <div class="trust-item">
+            <span class="trust-number" data-count="0" data-target="0">0</span>
+            <span class="trust-label">Total Flips</span>
+          </div>
+          <div class="trust-divider" aria-hidden="true"></div>
+          <div class="trust-item">
+            <span class="trust-number gold-text" data-count="0" data-target="0">0%</span>
+            <span class="trust-label">Heads</span>
+          </div>
+          <div class="trust-divider" aria-hidden="true"></div>
+          <div class="trust-item">
+            <span class="trust-number silver-text" data-count="0" data-target="0">0%</span>
+            <span class="trust-label">Tails</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Flip Section (coin mechanics arrive in Phase 2) -->
+    <section class="flip-section" id="flip">
+      <div class="container">
+        <div class="section-heading">
+          <p class="eyebrow">The main event</p>
+          <h2>Flip the coin</h2>
+        </div>
+
+        <div class="flip-stage">
+          <div class="coin-shadow" id="coinShadow" aria-hidden="true"></div>
+          <div class="coin" id="coin" role="img" aria-label="Coin, currently showing heads">
+            <div class="coin-face coin-heads">
+              <span>H</span>
+            </div>
+            <div class="coin-face coin-tails">
+              <span>T</span>
+            </div>
+            <div class="coin-edge" aria-hidden="true"></div>
+          </div>
+        </div>
+
+        <div class="flip-controls">
+          <button class="btn btn-primary btn-large" id="flipBtn">
+            <i class="fa-solid fa-arrows-rotate"></i>
+            Flip Coin
+          </button>
+          <p class="flip-hint">or press <kbd>Space</kbd></p>
+        </div>
+
+        <p class="flip-result" id="flipResult" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <!-- Statistics -->
+    <section class="stats-section" id="stats">
+      <div class="container">
+        <div class="section-heading">
+          <p class="eyebrow">The numbers</p>
+          <h2>Your flip statistics</h2>
+        </div>
+
+        <div class="stats-grid" id="statsGrid">
+          <div class="stat-card">
+            <i class="fa-solid fa-coins stat-icon"></i>
+            <span class="stat-value" data-target="0">0</span>
+            <span class="stat-label">Total Flips</span>
+          </div>
+          <div class="stat-card gold-border">
+            <i class="fa-solid fa-h stat-icon gold-text"></i>
+            <span class="stat-value" data-target="0">0</span>
+            <span class="stat-label">Heads</span>
+          </div>
+          <div class="stat-card silver-border">
+            <i class="fa-solid fa-t stat-icon silver-text"></i>
+            <span class="stat-value" data-target="0">0</span>
+            <span class="stat-label">Tails</span>
+          </div>
+          <div class="stat-card">
+            <i class="fa-solid fa-percent stat-icon"></i>
+            <span class="stat-value" data-target="0" data-suffix="%">0%</span>
+            <span class="stat-label">Heads Rate</span>
+          </div>
+          <div class="stat-card">
+            <i class="fa-solid fa-fire stat-icon"></i>
+            <span class="stat-value" data-target="0">0</span>
+            <span class="stat-label">Current Streak</span>
+          </div>
+          <div class="stat-card">
+            <i class="fa-solid fa-trophy stat-icon"></i>
+            <span class="stat-value" data-target="0">0</span>
+            <span class="stat-label">Longest Streak</span>
+          </div>
+          <div class="stat-card">
+            <i class="fa-solid fa-calendar-day stat-icon"></i>
+            <span class="stat-value" data-target="0">0</span>
+            <span class="stat-label">Today</span>
+          </div>
+          <div class="stat-card">
+            <i class="fa-solid fa-calendar-week stat-icon"></i>
+            <span class="stat-value" data-target="0">0</span>
+            <span class="stat-label">This Week</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- History -->
+    <section class="history-section" id="history">
+      <div class="container">
+        <div class="section-heading history-heading">
+          <div>
+            <p class="eyebrow">The record</p>
+            <h2>Recent history</h2>
+          </div>
+          <button class="btn btn-ghost btn-small" id="clearHistoryBtn">
+            <i class="fa-solid fa-trash"></i>
+            Clear history
+          </button>
+        </div>
+
+        <div class="history-panel" id="historyPanel">
+          <ul class="history-list" id="historyList">
+            <li class="history-empty">No flips yet — your history will show up here.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features-section" id="features">
+      <div class="container">
+        <div class="section-heading">
+          <p class="eyebrow">Under the hood</p>
+          <h2>Built for the long flip</h2>
+        </div>
+
+        <div class="features-grid">
+          <div class="feature-card">
+            <i class="fa-solid fa-cube feature-icon"></i>
+            <h3>Realistic physics</h3>
+            <p>A true 3D flip with variable spin speed, arc height, and landing bounce — never the same flip twice.</p>
+          </div>
+          <div class="feature-card">
+            <i class="fa-solid fa-chart-line feature-icon"></i>
+            <h3>Live statistics</h3>
+            <p>Streaks, rates, and totals update in real time, backed by a persistent history you can trust.</p>
+          </div>
+          <div class="feature-card">
+            <i class="fa-solid fa-keyboard feature-icon"></i>
+            <h3>Keyboard-first</h3>
+            <p>Hit space to flip. No mouse required once you're in the zone.</p>
+          </div>
+          <div class="feature-card">
+            <i class="fa-solid fa-circle-half-stroke feature-icon"></i>
+            <h3>Light &amp; dark</h3>
+            <p>Two carefully tuned themes, both built around the same gold-and-silver identity.</p>
+          </div>
+          <div class="feature-card">
+            <i class="fa-solid fa-volume-high feature-icon"></i>
+            <h3>Tactile sound</h3>
+            <p>Throw, spin, and landing sound effects — mute them any time with one tap.</p>
+          </div>
+          <div class="feature-card">
+            <i class="fa-solid fa-mobile-screen feature-icon"></i>
+            <h3>Fully responsive</h3>
+            <p>Tuned layouts for phone, tablet, and desktop — not just a shrunk-down site.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section class="about-section" id="about">
+      <div class="container about-inner">
+        <div class="about-copy">
+          <p class="eyebrow">Why FlipMaster</p>
+          <h2>A coin flip you can actually trust</h2>
+          <p>
+            Most "flip a coin" tools are a single button on a blank page. FlipMaster treats the
+            flip as the whole product: a fair, verifiable random result, a history you can review,
+            and statistics that hold you accountable to your own calls.
+          </p>
+          <p>
+            Whether you're settling a debate, making a low-stakes decision, or just testing your luck
+            against the streak counter, every flip is logged, timestamped, and yours to look back on.
+          </p>
+        </div>
+        <div class="about-visual" aria-hidden="true">
+          <div class="about-coin-stack">
+            <div class="stack-coin gold"></div>
+            <div class="stack-coin silver"></div>
+            <div class="stack-coin gold"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq-section" id="faq">
+      <div class="container">
+        <div class="section-heading">
+          <p class="eyebrow">Questions</p>
+          <h2>Frequently asked</h2>
+        </div>
+
+        <div class="faq-list">
+          <details class="faq-item" open>
+            <summary>Is the flip actually random?</summary>
+            <p>Yes. Each flip uses a uniform random draw, so heads and tails each land at roughly 50% over enough flips.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Is my flip history saved?</summary>
+            <p>Yes — every flip is stored so your statistics and recent history persist between visits.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Can I clear my history?</summary>
+            <p>Yes, use the "Clear history" button above the history panel. This resets your stored flips.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Does it work on mobile?</summary>
+            <p>FlipMaster is fully responsive with dedicated layouts for phone, tablet, and desktop.</p>
+          </details>
+          <details class="faq-item">
+            <summary>Can I use the keyboard instead of tapping?</summary>
+            <p>Press the Space bar at any time to trigger a flip, no mouse needed.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <span class="logo-mark small">
+          <span class="logo-face gold">H</span>
+          <span class="logo-face silver">T</span>
+        </span>
+        <span class="logo-text">FlipMaster</span>
+        <p class="footer-tagline">Every flip starts here.</p>
+      </div>
+
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Product</h4>
+          <a href="#flip">Flip</a>
+          <a href="#stats">Statistics</a>
+          <a href="#history">History</a>
+        </div>
+        <div class="footer-col">
+          <h4>Company</h4>
+          <a href="#about">About</a>
+          <a href="#faq">FAQ</a>
+        </div>
+        <div class="footer-col">
+          <h4>Connect</h4>
+          <a href="#" aria-label="GitHub"><i class="fa-brands fa-github"></i> GitHub</a>
+          <a href="#" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i> Twitter</a>
+        </div>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <p>&copy; 2026 FlipMaster. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Back to top -->
+  <button id="backToTop" class="back-to-top" aria-label="Back to top">
+    <i class="fa-solid fa-arrow-up"></i>
+  </button>
+
+  <!-- Toast container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
