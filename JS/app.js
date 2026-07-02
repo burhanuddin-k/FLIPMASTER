@@ -87,28 +87,3 @@
     wireInterimControls();
   });
 })();
-import { flipCoin } from './coin.js';
-
-const flipBtn = document.getElementById('flip-btn');
-let isFlipping = false;
-
-flipBtn.addEventListener('click', async () => {
-    if (isFlipping) return;
-    
-    isFlipping = true;
-    flipBtn.disabled = true;
-
-    // Simulate API call for result
-    const result = Math.random() > 0.5 ? 'heads' : 'tails';
-    
-    console.log(`Result: ${result}`);
-
-    // Trigger Animation
-    const animation = flipCoin(result);
-
-    // Re-enable button after animation
-    animation.then(() => {
-        isFlipping = false;
-        flipBtn.disabled = false;
-    });
-});
