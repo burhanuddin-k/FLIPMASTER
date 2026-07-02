@@ -2,73 +2,78 @@ pipeline {
     agent any
 
     environment {
-        APP_NAME = "FlipMaster"
-        DEPLOY_DIR = "/var/www/FlipMaster"
+        DEPLOY_DIR = "/var/www/html"
+    }
+
+    options {
+        timestamps()
     }
 
     stages {
 
-        stage('Checkout Code') {
+        stage('Checkout Source') {
             steps {
-                echo "Cloning latest code..."
-                git branch: 'main',
-                    url: 'https://github.com/YOUR_USERNAME/FlipMaster.git'
+                echo "Using source code checked out by Jenkins."
             }
         }
 
         stage('Verify Project') {
             steps {
                 sh '''
-                echo "Project Structure"
+                echo "Current Directory:"
                 pwd
+
+                echo "Project Files:"
                 ls -la
+
+                if [ ! -f index.html ]; then
+                    echo "ERROR: index.html not found!"
+                    exit 1
+                fi
+
+                echo "Project verification successful."
                 '''
             }
         }
 
-        stage('Install Backend Dependencies') {
-            when {
-                expression {
-                    fileExists('server/package.json')
-                }
-            }
+        stage('Clean Deployment Folder') {
             steps {
-                dir('server') {
-                    sh '''
-                    npm install
-                    '''
-                }
-            }
-        }
-
-        stage('Run Tests') {
-            when {
-                expression {
-                    fileExists('server/package.json')
-                }
-            }
-            steps {
-                dir('server') {
-                    sh '''
-                    npm test || true
-                    '''
-                }
+                sh '''
+                echo "Cleaning old website..."
+                sudo rm -rf ${DEPLOY_DIR}/*
+                '''
             }
         }
 
         stage('Deploy Website') {
             steps {
-                sh """
-                sudo mkdir -p ${DEPLOY_DIR}
-                sudo cp -r client/* ${DEPLOY_DIR}/
-                """
+                sh '''
+                echo "Deploying website..."
+
+                sudo cp -r ./* ${DEPLOY_DIR}/
+
+                echo "Deployment completed."
+                '''
+            }
+        }
+
+        stage('Set Permissions') {
+            steps {
+                sh '''
+                sudo chown -R www-data:www-data ${DEPLOY_DIR}
+                sudo chmod -R 755 ${DEPLOY_DIR}
+                '''
             }
         }
 
         stage('Health Check') {
             steps {
                 sh '''
-                echo "Deployment Completed Successfully"
+                echo "Checking website..."
+
+                sleep 5
+
+                curl http://localhost | head
                 '''
             }
         }
@@ -77,11 +82,15 @@ pipeline {
     post {
 
         success {
-            echo "✅ FlipMaster deployed successfully."
+            echo "======================================"
+            echo "FlipMaster deployed successfully!"
+            echo "======================================"
         }
 
         failure {
-            echo "❌ Pipeline failed."
+            echo "======================================"
+            echo "Pipeline Failed!"
+            echo "======================================"
         }
 
         always {
