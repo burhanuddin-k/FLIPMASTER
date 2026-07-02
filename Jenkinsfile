@@ -7,7 +7,6 @@ pipeline {
 
     options {
         timestamps()
-        skipDefaultCheckout(false)
     }
 
     stages {
@@ -15,41 +14,39 @@ pipeline {
         stage('Verify Checkout') {
             steps {
                 sh '''
-                echo "Current Directory:"
-                pwd
+                    echo "===== WORKSPACE ====="
+                    pwd
 
-                echo "Files:"
-                ls -la
+                    echo "===== FILES ====="
+                    ls -lah
 
-                if [ ! -f index.html ]; then
-                    echo "ERROR: index.html not found!"
-                    exit 1
-                fi
-            '''
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                sh '''
-                echo "Deploying website..."
-
-                sudo mkdir -p ${DEPLOY_DIR}
-
-                sudo rm -rf ${DEPLOY_DIR:?}/*
-
-                sudo cp -r . ${DEPLOY_DIR}/
-
-                echo "Deployment Complete."
+                    test -f index.html
                 '''
             }
         }
 
-        stage('Permissions') {
+        stage('Prepare Server') {
             steps {
                 sh '''
-                sudo chown -R www-data:www-data ${DEPLOY_DIR}
-                sudo chmod -R 755 ${DEPLOY_DIR}
+                    sudo mkdir -p ${DEPLOY_DIR}
+                    sudo rm -rf ${DEPLOY_DIR:?}/*
+                '''
+            }
+        }
+
+        stage('Deploy Website') {
+            steps {
+                sh '''
+                    sudo cp -r * ${DEPLOY_DIR}/
+                '''
+            }
+        }
+
+        stage('Set Permissions') {
+            steps {
+                sh '''
+                    sudo chown -R www-data:www-data ${DEPLOY_DIR}
+                    sudo chmod -R 755 ${DEPLOY_DIR}
                 '''
             }
         }
@@ -57,26 +54,22 @@ pipeline {
         stage('Health Check') {
             steps {
                 sh '''
-                sleep 3
-
-                curl -I http://localhost
+                    curl -I http://localhost
                 '''
             }
         }
+
     }
 
     post {
 
         success {
-            echo "================================="
-            echo "FlipMaster deployed successfully"
-            echo "================================="
+            echo "SUCCESS: FlipMaster deployed."
         }
 
         failure {
-            echo "================================="
-            echo "Pipeline Failed"
-            echo "================================="
+            echo "FAILED: Deployment failed."
         }
+
     }
 }
