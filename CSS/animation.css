@@ -25,8 +25,47 @@
   }
 }
 
-.coin-idle {
+/* NOTE: idle coin bobbing is driven by GSAP in coin.js, not this class.
+   A CSS animation on .coin would overwrite the inline `transform` GSAP
+   uses to hold rotationY (which face is showing), wiping out the flip
+   result the instant the idle animation ticked. Kept here only as a
+   generic utility for non-coin elements that want the same float. */
+.float-idle {
   animation: floatY 3.4s ease-in-out infinite;
+}
+
+@keyframes coinGlowGold {
+  0% {
+    box-shadow: 0 0 0 0 rgba(232, 180, 84, 0);
+  }
+  30% {
+    box-shadow: 0 0 44px 10px rgba(232, 180, 84, 0.55);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(232, 180, 84, 0);
+  }
+}
+
+@keyframes coinGlowSilver {
+  0% {
+    box-shadow: 0 0 0 0 rgba(184, 196, 208, 0);
+  }
+  30% {
+    box-shadow: 0 0 44px 10px rgba(184, 196, 208, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(184, 196, 208, 0);
+  }
+}
+
+.coin-glow-gold {
+  border-radius: 50%;
+  animation: coinGlowGold 0.9s ease-out;
+}
+
+.coin-glow-silver {
+  border-radius: 50%;
+  animation: coinGlowSilver 0.9s ease-out;
 }
 
 /* Scroll-reveal: elements start hidden, ui.js toggles .in-view via IntersectionObserver */
