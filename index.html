@@ -43,6 +43,43 @@
           <span class="logo-face silver">T</span>
         </span>
         <span class="logo-text">FlipMaster</span>
+        <!-- Update your navbar navigation in index.html -->
+<!-- Find this section around line 45 and add the Wheel link: -->
+
+      <nav class="nav-links" id="navLinks" aria-label="Primary">
+        <a href="#flip">Flip</a>
+        <a href="#wheel">Wheel</a>
+        <a href="#stats">Stats</a>
+        <a href="#features">Features</a>
+        <a href="#about">About</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+
+<!-- Also update the trust row section if you want to show wheel stats: -->
+<!-- Around line 80, in the hero-trust-row, you can optionally add: -->
+
+        <div class="hero-trust-row" id="heroTrustRow">
+          <div class="trust-item">
+            <span class="trust-number" data-stat="heroTotal" data-count="0">0</span>
+            <span class="trust-label">Total Flips</span>
+          </div>
+          <div class="trust-divider" aria-hidden="true"></div>
+          <div class="trust-item">
+            <span class="trust-number gold-text" data-stat="heroHeadsPct" data-count="0" data-suffix="%">0%</span>
+            <span class="trust-label">Heads</span>
+          </div>
+          <div class="trust-divider" aria-hidden="true"></div>
+          <div class="trust-item">
+            <span class="trust-number silver-text" data-stat="heroTailsPct" data-count="0" data-suffix="%">0%</span>
+            <span class="trust-label">Tails</span>
+          </div>
+          <!-- OPTIONAL: Wheel spins counter -->
+          <!-- <div class="trust-divider" aria-hidden="true"></div>
+          <div class="trust-item">
+            <span class="trust-number" data-stat="wheelSpins" data-count="0">0</span>
+            <span class="trust-label">Wheel Spins</span>
+          </div> -->
+        </div>
       </a>
 
       <nav class="nav-links" id="navLinks" aria-label="Primary">
@@ -148,8 +185,73 @@
         <div class="section-heading">
           <p class="eyebrow">The numbers</p>
           <h2>Your flip statistics</h2>
+          <!-- Add this section to your index.html after the Flip Section (around line 150) -->
+
+    <!-- Spin Wheel Section -->
+    <section class="wheel-section" id="wheel">
+      <div class="container">
+        <div class="section-heading">
+          <p class="eyebrow">Make a choice</p>
+          <h2>Spin the Wheel</h2>
         </div>
 
+        <div class="wheel-wrapper">
+          <!-- Spin Wheel Canvas -->
+          <div class="wheel-container">
+            <canvas id="wheelCanvas" width="400" height="400" aria-label="Spin wheel"></canvas>
+            <button class="btn btn-primary btn-spin" id="spinWheelBtn">
+              <i class="fa-solid fa-play"></i>
+              Spin
+            </button>
+          </div>
+
+          <!-- Wheel Controls & Entry Manager -->
+          <div class="wheel-controls">
+            <div class="wheel-panel">
+              <h3>Manage Entries</h3>
+              
+              <!-- Add Entry Form -->
+              <div class="add-entry-form">
+                <input
+                  type="text"
+                  id="wheelEntryInput"
+                  class="wheel-input"
+                  placeholder="Add your own entry (max 20 chars)"
+                  maxlength="20"
+                  aria-label="Wheel entry input"
+                />
+                <button class="btn btn-small" id="addEntryBtn">
+                  <i class="fa-solid fa-plus"></i>
+                  Add
+                </button>
+              </div>
+
+              <!-- Current Entries List -->
+              <div class="entries-list" id="entriesList">
+                <p class="entries-info">Loading entries...</p>
+              </div>
+
+              <!-- Info Text -->
+              <p class="wheel-info">
+                <i class="fa-solid fa-info-circle"></i>
+                You can have up to 10 entries. Default entries (Yes/No) can be removed.
+              </p>
+
+              <!-- Reset Button -->
+              <button class="btn btn-ghost btn-small" id="resetWheelBtn">
+                <i class="fa-solid fa-refresh"></i>
+                Reset to Default
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wheel Result Display -->
+        <p class="wheel-result" id="wheelResult" aria-live="polite"></p>
+      </div>
+    </section>
+        </div>
+    
         <div class="stats-grid" id="statsGrid">
           <div class="stat-card">
             <i class="fa-solid fa-coins stat-icon"></i>

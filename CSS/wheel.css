@@ -1,0 +1,370 @@
+/* ==========================================================================
+   FlipMaster — Spin Wheel Styles
+   Add this to your CSS/style.css or create a new wheel.css file
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Wheel Section
+   -------------------------------------------------------------------------- */
+
+.wheel-section {
+  padding: 100px 0;
+  position: relative;
+}
+
+.wheel-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+  margin-bottom: 48px;
+}
+
+/* --------------------------------------------------------------------------
+   Wheel Canvas
+   -------------------------------------------------------------------------- */
+
+.wheel-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1200px;
+}
+
+#wheelCanvas {
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  border-radius: 50%;
+  box-shadow: var(--shadow-lg);
+  cursor: pointer;
+  filter: drop-shadow(0 0 32px rgba(232, 180, 84, 0.15));
+  transition: filter 0.3s ease;
+}
+
+#wheelCanvas:hover {
+  filter: drop-shadow(0 0 48px rgba(232, 180, 84, 0.3));
+}
+
+.btn-spin {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  z-index: 10;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-spin:hover {
+  transform: translate(-50%, -50%) scale(1.08);
+}
+
+.btn-spin:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: translate(-50%, -50%);
+}
+
+/* --------------------------------------------------------------------------
+   Wheel Controls Panel
+   -------------------------------------------------------------------------- */
+
+.wheel-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.wheel-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.wheel-panel h3 {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   Add Entry Form
+   -------------------------------------------------------------------------- */
+
+.add-entry-form {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.wheel-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 12px 16px;
+  background: var(--surface-glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.wheel-input::placeholder {
+  color: var(--text-muted);
+}
+
+.wheel-input:focus {
+  outline: none;
+  border-color: var(--gold);
+  background: var(--surface-glass-strong);
+  box-shadow: 0 0 0 3px rgba(232, 180, 84, 0.1);
+}
+
+.wheel-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* --------------------------------------------------------------------------
+   Entries List
+   -------------------------------------------------------------------------- */
+
+.entries-list {
+  max-height: 280px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.entries-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.entries-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.entries-list::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 3px;
+}
+
+.entries-list::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+.entries-info {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  padding: 8px 0;
+  text-align: center;
+}
+
+.entry-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: var(--surface-glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+  animation: entrySlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes entrySlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.entry-item:hover {
+  background: var(--surface-glass-strong);
+  border-color: var(--border-strong);
+}
+
+.entry-item-text {
+  flex: 1;
+  font-weight: 500;
+  font-size: 0.95rem;
+  word-break: break-word;
+}
+
+.entry-item.default .entry-item-text {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.entry-badge {
+  display: inline-block;
+  background: var(--gold);
+  color: #14100a;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 3px;
+  margin-left: 8px;
+}
+
+.entry-remove-btn {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--danger);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  margin-left: 8px;
+}
+
+.entry-remove-btn:hover {
+  background: rgba(235, 87, 87, 0.1);
+  border-color: var(--danger);
+  transform: scale(1.05);
+}
+
+.entry-remove-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* --------------------------------------------------------------------------
+   Info & Reset
+   -------------------------------------------------------------------------- */
+
+.wheel-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--surface-glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+.wheel-info i {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--gold);
+}
+
+/* --------------------------------------------------------------------------
+   Wheel Result
+   -------------------------------------------------------------------------- */
+
+.wheel-result {
+  text-align: center;
+  margin-top: 28px;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 700;
+  min-height: 1.6em;
+  color: var(--text-primary);
+  animation: resultPulse 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes resultPulse {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 1024px) {
+  .wheel-wrapper {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .wheel-controls {
+    order: -1;
+  }
+}
+
+@media (max-width: 768px) {
+  .wheel-panel {
+    padding: 20px;
+  }
+
+  .wheel-input {
+    min-width: 160px;
+    font-size: 0.9rem;
+  }
+
+  .btn-spin {
+    width: 56px;
+    height: 56px;
+    font-size: 1rem;
+  }
+
+  .entries-list {
+    max-height: 200px;
+  }
+
+  #wheelCanvas {
+    max-width: 280px;
+  }
+
+  .wheel-wrapper {
+    gap: 24px;
+  }
+}
+
+@media (max-width: 420px) {
+  .wheel-panel {
+    padding: 16px;
+  }
+
+  .add-entry-form {
+    flex-direction: column;
+  }
+
+  .wheel-input {
+    min-width: auto;
+  }
+
+  #wheelCanvas {
+    max-width: 200px;
+  }
+
+  .wheel-result {
+    font-size: 1.1rem;
+  }
+}
