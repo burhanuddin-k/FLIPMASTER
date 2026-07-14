@@ -6,6 +6,9 @@
  * running alongside GSAP on the same element would overwrite whichever
  * rotationY value is holding the correct face up, so idle bobbing is a
  * GSAP tween too, started/stopped around each flip rather than a CSS class.
+ *
+ * FIXED: Removed rotationX from the flip animation to eliminate 3D distortion
+ * during the coin flip. The coin now rotates cleanly on the Y-axis only.
  */
 (function () {
   "use strict";
@@ -116,10 +119,11 @@
     });
 
     // Rise into the air, spinning, while the shadow shrinks and fades.
+    // FIXED: Removed rotationX to eliminate distortion. Coin now rotates cleanly on Y-axis only.
     tl.to(coin, { y: -130, duration: 0.42, ease: "power2.out" }, 0);
     tl.to(
       coin,
-      { rotationY: targetRotation, rotationX: "+=25", duration: 0.84, ease: "none" },
+      { rotationY: targetRotation, duration: 0.84, ease: "none" },
       0
     );
     tl.to(shadow, { scale: 0.35, opacity: 0.15, duration: 0.42, ease: "power2.out" }, 0);
