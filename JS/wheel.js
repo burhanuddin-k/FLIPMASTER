@@ -1,15 +1,13 @@
 /**
- * wheel.js — Spin wheel mechanics.
- *
- * Manages a customizable spin wheel where users can add/remove entries
- * (up to 10 total). Includes canvas rendering, GSAP animation, persistent
- * storage, and result detection. Default entries are "Yes" and "No".
+ * wheel.js — Spin wheel mechanics (REDESIGNED)
+ * 
+ * Improved design with better colors, visual feedback, and functionality
  */
+
 (function () {
   "use strict";
 
-  console.log("🎡 Wheel.js initializing...");
-
+  // DOM elements
   const canvas = document.getElementById("wheelCanvas");
   const spinBtn = document.getElementById("spinWheelBtn");
   const resultEl = document.getElementById("wheelResult");
@@ -18,67 +16,45 @@
   const entriesList = document.getElementById("entriesList");
   const resetWheelBtn = document.getElementById("resetWheelBtn");
 
-  // Debug: Log what we found
-  console.log("🎡 Found elements:", {
-    canvas: !!canvas,
-    spinBtn: !!spinBtn,
-    resultEl: !!resultEl,
-    entryInput: !!entryInput,
-  });
-
-  if (!canvas || !spinBtn || !resultEl) {
-    console.error("🎡 ERROR: Required wheel elements not found in HTML!");
-    console.error("Missing:", {
-      canvas: !canvas ? "wheelCanvas" : null,
-      spinBtn: !spinBtn ? "spinWheelBtn" : null,
-      resultEl: !resultEl ? "wheelResult" : null,
-    });
-    return;
-  }
+  if (!canvas || !spinBtn || !resultEl) return;
 
   const ctx = canvas.getContext("2d");
-  if (!ctx) {
-    console.error("🎡 ERROR: Could not get canvas 2D context!");
-    return;
-  }
-
-  console.log("✅ Canvas context created successfully");
-
-  const prefersReducedMotion = window.matchMedia(
-    "(prefers-reduced-motion: reduce)"
-  ).matches;
+  if (!ctx) return;
 
   // Configuration
   const MAX_ENTRIES = 10;
   const DEFAULT_ENTRIES = ["Yes", "No"];
   const STORAGE_KEY = "flipmaster:wheel-entries";
+  
+  // Vibrant colors - better contrast and visibility
   const COLORS = [
-    "#e8b454", // gold
-    "#b8c4d0", // silver
-    "#f0c878", // gold-soft
-    "#d4dde5", // silver-soft
-    "#6fcf97", // success
-    "#eb5757", // danger
-    "#a78bfa", // purple
-    "#60a5fa", // blue
-    "#34d399", // teal
-    "#fbbf24", // amber
+    "#FF6B6B",  // vibrant red
+    "#4ECDC4",  // vibrant teal
+    "#FFE66D",  // vibrant yellow
+    "#95E1D3",  // mint green
+    "#F38181",  // salmon pink
+    "#AA96DA",  // purple
+    "#FCBAD3",  // light pink
+    "#A8D8EA",  // sky blue
+    "#FFD700",  // gold
+    "#FF1493"   // deep pink
   ];
 
+  // State
   let entries = [];
   let isSpinning = false;
   let currentRotation = 0;
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   /**
-   * Load entries from localStorage or use defaults
+   * Load entries from localStorage
    */
   function loadEntries() {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       entries = stored ? JSON.parse(stored) : [...DEFAULT_ENTRIES];
-      console.log("✅ Loaded entries:", entries);
+      console.log("Wheel entries:", entries);
     } catch (err) {
-      console.error("🎡 Could not load entries:", err);
       entries = [...DEFAULT_ENTRIES];
     }
   }
@@ -90,117 +66,138 @@
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
     } catch (err) {
-      console.error("🎡 Could not save entries:", err);
+      console.error("Error saving entries", err);
     }
   }
 
   /**
-   * Draw the spin wheel on canvas
+   * Draw the wheel on canvas
    */
   function drawWheel() {
-    try {
-      const radius = canvas.width / 2;
-      const sliceAngle = (2 * Math.PI) / entries.length;
+    const width = canvas.width;
+    const height = canvas.height;
+    const radius = Math.min(width, height) / 2 - 10;
+    const centerX = width / 2;
+    const centerY = height / 2;
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.save();
-      ctx.translate(radius, radius);
-      ctx.rotate((currentRotation * Math.PI) / 180);
+    // Clear canvas
+    ctx.clearRect(0, 0, width, height);
 
-      // Draw segments
-      entries.forEach((entry, index) => {
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(0, 0, radius - 8, 0, sliceAngle);
-        ctx.lineTo(0, 0);
-        ctx.fillStyle = COLORS[index % COLORS.length];
-        ctx.fill();
+    if (entries.length === 0) {
+      ctx.fillStyle = "#FFF";
+      ctx.font = "20px Sora";
+      ctx.textAlign = "center";
+      ctx.fillText("No entries yet", centerX, centerY);
+      return;
+    }
 
-        // Border
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        ctx.restore();
+    const sliceAngle = (2 * Math.PI) / entries.length;
 
-        // Draw text
-        ctx.save();
-        ctx.fillStyle = "#14100a";
-        ctx.font = `bold ${Math.max(11, 16 - entries.length)}px "Sora", sans-serif`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
+    // Draw segments
+    entries.forEach((entry, index) => {
+      const startAngle = index * sliceAngle - Math.PI / 2 + (currentRotation * Math.PI) / 180;
+      const endAngle = startAngle + sliceAngle;
 
-        const textRadius = radius * 0.65;
-        const angle = index * sliceAngle + sliceAngle / 2;
-        const x = textRadius * Math.cos(angle);
-        const y = textRadius * Math.sin(angle);
-
-        ctx.translate(x, y);
-        ctx.rotate(angle + Math.PI / 2);
-        ctx.fillText(entry.substring(0, 15), 0, 0);
-        ctx.restore();
-      });
-
-      // Draw center circle
+      // Draw segment
       ctx.beginPath();
-      ctx.arc(0, 0, 16, 0, 2 * Math.PI);
-      ctx.fillStyle = "#e8b454";
+      ctx.moveTo(centerX, centerY);
+      ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+      ctx.lineTo(centerX, centerY);
+      ctx.fillStyle = COLORS[index % COLORS.length];
       ctx.fill();
-      ctx.strokeStyle = "#ffffff";
-      ctx.lineWidth = 2;
+
+      // Draw border
+      ctx.strokeStyle = "#FFFFFF";
+      ctx.lineWidth = 3;
       ctx.stroke();
 
-      // Draw pointer at top
-      ctx.save();
-      ctx.fillStyle = "#e8b454";
-      ctx.beginPath();
-      ctx.moveTo(0, -radius + 20);
-      ctx.lineTo(-12, -radius + 35);
-      ctx.lineTo(12, -radius + 35);
-      ctx.closePath();
-      ctx.fill();
-      ctx.restore();
+      // Draw text
+      const textAngle = startAngle + sliceAngle / 2;
+      const textRadius = radius * 0.65;
+      const textX = centerX + textRadius * Math.cos(textAngle);
+      const textY = centerY + textRadius * Math.sin(textAngle);
 
+      ctx.save();
+      ctx.translate(textX, textY);
+      ctx.rotate(textAngle + Math.PI / 2);
+      ctx.fillStyle = "#FFFFFF";
+      ctx.font = "bold 14px Sora";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+      ctx.shadowBlur = 4;
+      ctx.fillText(entry.substring(0, 16), 0, 0);
       ctx.restore();
-    } catch (err) {
-      console.error("🎡 Error drawing wheel:", err);
-    }
+    });
+
+    // Draw center circle with gradient
+    const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 20);
+    gradient.addColorStop(0, "#FFD700");
+    gradient.addColorStop(1, "#E8B454");
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, 20, 0, 2 * Math.PI);
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    ctx.strokeStyle = "#FFFFFF";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Draw pointer at top
+    ctx.beginPath();
+    ctx.moveTo(centerX, centerY - radius - 15);
+    ctx.lineTo(centerX - 15, centerY - radius + 5);
+    ctx.lineTo(centerX + 15, centerY - radius + 5);
+    ctx.closePath();
+    ctx.fillStyle = "#FFD700";
+    ctx.fill();
+    ctx.strokeStyle = "#FFFFFF";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Draw pointer border
+    ctx.beginPath();
+    ctx.moveTo(centerX, centerY - radius - 15);
+    ctx.lineTo(centerX - 15, centerY - radius + 5);
+    ctx.lineTo(centerX + 15, centerY - radius + 5);
+    ctx.closePath();
+    ctx.strokeStyle = "#333";
+    ctx.lineWidth = 1;
+    ctx.stroke();
   }
 
   /**
-   * Render the entries list UI
+   * Render entries list
    */
   function renderEntriesList() {
     if (!entriesList) return;
 
     if (entries.length === 0) {
-      entriesList.innerHTML =
-        '<p class="entries-info">No entries yet. Add one to get started!</p>';
+      entriesList.innerHTML = '<p class="entries-info">No entries. Add one to start!</p>';
       return;
     }
 
     entriesList.innerHTML = entries
-      .map(
-        (entry, index) => `
-      <div class="entry-item ${DEFAULT_ENTRIES.includes(entry) ? "default" : ""}">
-        <div class="entry-item-text">
-          ${entry}
-          ${DEFAULT_ENTRIES.includes(entry) ? '<span class="entry-badge">Default</span>' : ""}
-        </div>
-        <button
-          class="entry-remove-btn"
-          data-index="${index}"
-          aria-label="Remove ${entry}"
-          ${entries.length <= 2 ? "disabled" : ""}
-          title="${entries.length <= 2 ? "Keep at least 2 entries" : "Remove entry"}"
-        >
-          <i class="fa-solid fa-trash"></i>
-        </button>
-      </div>
-    `
-      )
+      .map((entry, index) => {
+        const isDefault = DEFAULT_ENTRIES.includes(entry);
+        return `
+          <div class="entry-item ${isDefault ? "default" : ""}">
+            <div class="entry-item-text">
+              <span style="display: inline-block; width: 12px; height: 12px; background: ${COLORS[index % COLORS.length]}; border-radius: 2px; margin-right: 8px;"></span>
+              ${entry}
+              ${isDefault ? '<span class="entry-badge">Default</span>' : ""}
+            </div>
+            <button
+              class="entry-remove-btn"
+              data-index="${index}"
+              ${entries.length <= 2 ? "disabled" : ""}
+            >
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        `;
+      })
       .join("");
 
-    // Wire remove buttons
     entriesList.querySelectorAll(".entry-remove-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
         const index = parseInt(btn.dataset.index, 10);
@@ -208,62 +205,45 @@
       });
     });
 
-    // Update canvas
     drawWheel();
   }
 
   /**
-   * Add a new entry
+   * Add entry
    */
   function addEntry(text) {
     text = text.trim();
 
     if (!text) {
-      if (window.FlipMasterUI) {
-        window.FlipMasterUI.showToast("Please enter text", "error");
-      }
+      showToast("Please enter text", "error");
       return;
     }
 
     if (entries.length >= MAX_ENTRIES) {
-      if (window.FlipMasterUI) {
-        window.FlipMasterUI.showToast(
-          `Maximum ${MAX_ENTRIES} entries allowed`,
-          "error"
-        );
-      }
+      showToast(`Maximum ${MAX_ENTRIES} entries allowed`, "error");
       return;
     }
 
     if (entries.includes(text)) {
-      if (window.FlipMasterUI) {
-        window.FlipMasterUI.showToast("This entry already exists", "error");
-      }
+      showToast("Entry already exists", "error");
       return;
     }
 
     entries.push(text);
     saveEntries();
     renderEntriesList();
-    entryInput.value = "";
-    entryInput.focus();
+    if (entryInput) entryInput.value = "";
+    if (entryInput) entryInput.focus();
 
-    if (window.FlipMasterUI) {
-      window.FlipMasterUI.showToast(`"${text}" added!`, "success");
-    }
+    showToast(`"${text}" added!`, "success");
   }
 
   /**
-   * Remove an entry by index
+   * Remove entry
    */
   function removeEntry(index) {
     if (entries.length <= 2) {
-      if (window.FlipMasterUI) {
-        window.FlipMasterUI.showToast(
-          "Keep at least 2 entries",
-          "error"
-        );
-      }
+      showToast("Keep at least 2 entries", "error");
       return;
     }
 
@@ -271,37 +251,26 @@
     entries.splice(index, 1);
     saveEntries();
     renderEntriesList();
-
-    if (window.FlipMasterUI) {
-      window.FlipMasterUI.showToast(`"${removed}" removed`, "success");
-    }
+    showToast(`"${removed}" removed`, "success");
   }
 
   /**
-   * Reset to default entries
+   * Reset to defaults
    */
   function resetEntries() {
-    if (
-      !confirm(
-        "Reset wheel to default Yes/No entries? This will remove all custom entries."
-      )
-    ) {
-      return;
-    }
+    if (!confirm("Reset to Yes/No?")) return;
 
     entries = [...DEFAULT_ENTRIES];
     currentRotation = 0;
     saveEntries();
     renderEntriesList();
-    resultEl.textContent = "";
+    if (resultEl) resultEl.textContent = "";
 
-    if (window.FlipMasterUI) {
-      window.FlipMasterUI.showToast("Wheel reset to defaults", "success");
-    }
+    showToast("Reset to defaults", "success");
   }
 
   /**
-   * Get the currently selected entry (top of wheel)
+   * Get selected entry
    */
   function getSelectedEntry() {
     const normalizedRotation = ((currentRotation % 360) + 360) % 360;
@@ -312,68 +281,88 @@
   }
 
   /**
-   * Spin the wheel
+   * Show toast
+   */
+  function showToast(message, type = "default") {
+    if (window.FlipMasterUI && window.FlipMasterUI.showToast) {
+      window.FlipMasterUI.showToast(message, type);
+    }
+  }
+
+  /**
+   * Spin wheel
    */
   function spinWheel() {
-    if (isSpinning || entries.length < 2) return;
+    if (isSpinning || entries.length < 2) {
+      if (entries.length < 2) showToast("Add at least 2 entries first", "error");
+      return;
+    }
 
     isSpinning = true;
-    spinBtn.disabled = true;
-    resultEl.textContent = "";
+    if (spinBtn) spinBtn.disabled = true;
+    if (resultEl) {
+      resultEl.textContent = "Spinning...";
+      resultEl.style.color = "#FFD700";
+    }
 
     if (prefersReducedMotion) {
-      // No animation, just pick a result
-      const minSpins = 1;
-      const spinAmount = (minSpins + Math.random() * 0.5) * 360;
+      const spinAmount = (1 + Math.random() * 0.5) * 360;
       currentRotation += spinAmount;
-      resultEl.textContent = `🎡 ${getSelectedEntry()}`;
+      const winner = getSelectedEntry();
+      if (resultEl) resultEl.textContent = `🎡 ${winner}`;
       isSpinning = false;
-      spinBtn.disabled = false;
+      if (spinBtn) spinBtn.disabled = false;
       drawWheel();
       return;
     }
 
-    // Check if GSAP is available
     if (typeof gsap === "undefined") {
-      console.error("🎡 ERROR: GSAP library not loaded!");
-      alert("Wheel animation library not loaded. Please refresh the page.");
+      showToast("Animation library not loaded", "error");
       isSpinning = false;
-      spinBtn.disabled = false;
+      if (spinBtn) spinBtn.disabled = false;
       return;
     }
 
-    // Spin: 5-8 full rotations + random final position
+    // Calculate spin
     const minSpins = 5;
     const maxSpins = 8;
     const randomSpins = minSpins + Math.random() * (maxSpins - minSpins);
     const finalRandomDegrees = Math.random() * 360;
     const totalRotation = randomSpins * 360 + finalRandomDegrees;
 
-    if (window.FlipMasterSound) {
+    if (window.FlipMasterSound && window.FlipMasterSound.playThrow) {
       window.FlipMasterSound.playThrow();
     }
 
-    gsap.to(
-      { rotation: currentRotation },
-      {
-        rotation: currentRotation + totalRotation,
-        duration: 3.5,
-        ease: "power2.inOut",
-        onUpdate(tween) {
-          currentRotation = tween.targets()[0].rotation;
-          drawWheel();
-        },
-        onComplete: () => {
-          const winner = getSelectedEntry();
-          resultEl.textContent = `🎡 ${winner}`;
-          if (window.FlipMasterSound) {
-            window.FlipMasterSound.playLand();
-          }
-          isSpinning = false;
-          spinBtn.disabled = false;
-        },
+    const animationObject = { rotation: currentRotation };
+
+    gsap.to(animationObject, {
+      rotation: currentRotation + totalRotation,
+      duration: 3.5,
+      ease: "power2.inOut",
+      onUpdate: function() {
+        currentRotation = animationObject.rotation;
+        drawWheel();
+      },
+      onComplete: () => {
+        const winner = getSelectedEntry();
+        
+        if (resultEl) {
+          resultEl.innerHTML = `<span style="font-size: 2em; font-weight: bold; color: #FFD700;">🎡 ${winner}</span>`;
+          resultEl.style.animation = "none";
+          setTimeout(() => {
+            resultEl.style.animation = "resultPulse 0.5s ease";
+          }, 10);
+        }
+
+        if (window.FlipMasterSound && window.FlipMasterSound.playLand) {
+          window.FlipMasterSound.playLand();
+        }
+
+        isSpinning = false;
+        if (spinBtn) spinBtn.disabled = false;
       }
-    );
+    });
   }
 
   /**
@@ -385,7 +374,7 @@
 
   if (addEntryBtn) {
     addEntryBtn.addEventListener("click", () => {
-      addEntry(entryInput.value);
+      if (entryInput) addEntry(entryInput.value);
     });
   }
 
@@ -401,7 +390,6 @@
     resetWheelBtn.addEventListener("click", resetEntries);
   }
 
-  // Click wheel to spin (like coin)
   if (canvas) {
     canvas.addEventListener("click", spinWheel);
   }
@@ -409,23 +397,22 @@
   /**
    * Initialize
    */
-  document.addEventListener("DOMContentLoaded", () => {
-    console.log("🎡 DOM loaded, initializing wheel...");
+  function init() {
     loadEntries();
     renderEntriesList();
-    console.log("✅ Wheel initialized successfully!");
-  });
-
-  // Also initialize if DOM is already loaded
-  if (document.readyState === "loading") {
-    console.log("🎡 Waiting for DOMContentLoaded...");
-  } else {
-    console.log("🎡 DOM already loaded, initializing immediately...");
-    loadEntries();
-    renderEntriesList();
-    console.log("✅ Wheel initialized successfully!");
   }
 
-  window.FlipMasterWheel = { spin: spinWheel, addEntry, removeEntry, getEntries: () => entries.slice() };
-  console.log("✅ FlipMasterWheel API ready");
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+
+  window.FlipMasterWheel = {
+    spin: spinWheel,
+    addEntry: addEntry,
+    removeEntry: removeEntry,
+    getEntries: () => entries.slice(),
+    resetEntries: resetEntries
+  };
 })();
