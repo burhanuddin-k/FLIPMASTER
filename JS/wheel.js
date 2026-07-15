@@ -1,14 +1,15 @@
 /**
  * wheel.js — Spin wheel mechanics.
- * 
- * Complete, production-ready spin wheel implementation.
- * Paste this entire file directly into JS/wheel.js
+ *
+ * Manages a customizable spin wheel where users can add/remove entries
+ * (up to 10 total). Includes canvas rendering, GSAP animation, persistent
+ * storage, and result detection. Default entries are "Yes" and "No".
  */
-
 (function () {
   "use strict";
 
-  // Get DOM elements
+  console.log("🎡 Wheel.js initializing...");
+
   const canvas = document.getElementById("wheelCanvas");
   const spinBtn = document.getElementById("spinWheelBtn");
   const resultEl = document.getElementById("wheelResult");
@@ -17,50 +18,67 @@
   const entriesList = document.getElementById("entriesList");
   const resetWheelBtn = document.getElementById("resetWheelBtn");
 
-  // Check if required elements exist
+  // Debug: Log what we found
+  console.log("🎡 Found elements:", {
+    canvas: !!canvas,
+    spinBtn: !!spinBtn,
+    resultEl: !!resultEl,
+    entryInput: !!entryInput,
+  });
+
   if (!canvas || !spinBtn || !resultEl) {
-    console.error("Wheel: Required elements not found in HTML");
+    console.error("🎡 ERROR: Required wheel elements not found in HTML!");
+    console.error("Missing:", {
+      canvas: !canvas ? "wheelCanvas" : null,
+      spinBtn: !spinBtn ? "spinWheelBtn" : null,
+      resultEl: !resultEl ? "wheelResult" : null,
+    });
     return;
   }
 
   const ctx = canvas.getContext("2d");
   if (!ctx) {
-    console.error("Wheel: Could not get canvas 2D context");
+    console.error("🎡 ERROR: Could not get canvas 2D context!");
     return;
   }
+
+  console.log("✅ Canvas context created successfully");
+
+  const prefersReducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
 
   // Configuration
   const MAX_ENTRIES = 10;
   const DEFAULT_ENTRIES = ["Yes", "No"];
   const STORAGE_KEY = "flipmaster:wheel-entries";
   const COLORS = [
-    "#e8b454",
-    "#b8c4d0",
-    "#f0c878",
-    "#d4dde5",
-    "#6fcf97",
-    "#eb5757",
-    "#a78bfa",
-    "#60a5fa",
-    "#34d399",
-    "#fbbf24"
+    "#e8b454", // gold
+    "#b8c4d0", // silver
+    "#f0c878", // gold-soft
+    "#d4dde5", // silver-soft
+    "#6fcf97", // success
+    "#eb5757", // danger
+    "#a78bfa", // purple
+    "#60a5fa", // blue
+    "#34d399", // teal
+    "#fbbf24", // amber
   ];
 
-  // State
   let entries = [];
   let isSpinning = false;
   let currentRotation = 0;
-  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   /**
-   * Load entries from localStorage
+   * Load entries from localStorage or use defaults
    */
   function loadEntries() {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       entries = stored ? JSON.parse(stored) : [...DEFAULT_ENTRIES];
+      console.log("✅ Loaded entries:", entries);
     } catch (err) {
-      console.error("Wheel: Error loading entries", err);
+      console.error("🎡 Could not load entries:", err);
       entries = [...DEFAULT_ENTRIES];
     }
   }
@@ -72,27 +90,25 @@
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
     } catch (err) {
-      console.error("Wheel: Error saving entries", err);
+      console.error("🎡 Could not save entries:", err);
     }
   }
 
   /**
-   * Draw the wheel on canvas
+   * Draw the spin wheel on canvas
    */
   function drawWheel() {
     try {
       const radius = canvas.width / 2;
       const sliceAngle = (2 * Math.PI) / entries.length;
 
-      // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.save();
       ctx.translate(radius, radius);
       ctx.rotate((currentRotation * Math.PI) / 180);
 
-      // Draw wheel segments
+      // Draw segments
       entries.forEach((entry, index) => {
-        // Draw segment
         ctx.save();
         ctx.beginPath();
         ctx.arc(0, 0, radius - 8, 0, sliceAngle);
@@ -100,16 +116,16 @@
         ctx.fillStyle = COLORS[index % COLORS.length];
         ctx.fill();
 
-        // Segment border
+        // Border
         ctx.strokeStyle = "#ffffff";
         ctx.lineWidth = 2;
         ctx.stroke();
         ctx.restore();
 
-        // Draw text on segment
+        // Draw text
         ctx.save();
         ctx.fillStyle = "#14100a";
-        ctx.font = "bold 14px 'Sora', sans-serif";
+        ctx.font = `bold ${Math.max(11, 16 - entries.length)}px "Sora", sans-serif`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
 
@@ -146,45 +162,45 @@
 
       ctx.restore();
     } catch (err) {
-      console.error("Wheel: Error drawing wheel", err);
+      console.error("🎡 Error drawing wheel:", err);
     }
   }
 
   /**
-   * Render the entries list in the UI
+   * Render the entries list UI
    */
   function renderEntriesList() {
     if (!entriesList) return;
 
     if (entries.length === 0) {
-      entriesList.innerHTML = '<p class="entries-info">No entries yet. Add one to get started!</p>';
+      entriesList.innerHTML =
+        '<p class="entries-info">No entries yet. Add one to get started!</p>';
       return;
     }
 
     entriesList.innerHTML = entries
-      .map((entry, index) => {
-        const isDefault = DEFAULT_ENTRIES.includes(entry);
-        return `
-          <div class="entry-item ${isDefault ? "default" : ""}">
-            <div class="entry-item-text">
-              ${entry}
-              ${isDefault ? '<span class="entry-badge">Default</span>' : ""}
-            </div>
-            <button
-              class="entry-remove-btn"
-              data-index="${index}"
-              aria-label="Remove ${entry}"
-              ${entries.length <= 2 ? "disabled" : ""}
-              title="${entries.length <= 2 ? "Keep at least 2 entries" : "Remove entry"}"
-            >
-              <i class="fa-solid fa-trash"></i>
-            </button>
-          </div>
-        `;
-      })
+      .map(
+        (entry, index) => `
+      <div class="entry-item ${DEFAULT_ENTRIES.includes(entry) ? "default" : ""}">
+        <div class="entry-item-text">
+          ${entry}
+          ${DEFAULT_ENTRIES.includes(entry) ? '<span class="entry-badge">Default</span>' : ""}
+        </div>
+        <button
+          class="entry-remove-btn"
+          data-index="${index}"
+          aria-label="Remove ${entry}"
+          ${entries.length <= 2 ? "disabled" : ""}
+          title="${entries.length <= 2 ? "Keep at least 2 entries" : "Remove entry"}"
+        >
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </div>
+    `
+      )
       .join("");
 
-    // Add click handlers to remove buttons
+    // Wire remove buttons
     entriesList.querySelectorAll(".entry-remove-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
         const index = parseInt(btn.dataset.index, 10);
@@ -192,7 +208,7 @@
       });
     });
 
-    // Redraw wheel with new entries
+    // Update canvas
     drawWheel();
   }
 
@@ -203,27 +219,38 @@
     text = text.trim();
 
     if (!text) {
-      showToast("Please enter text", "error");
+      if (window.FlipMasterUI) {
+        window.FlipMasterUI.showToast("Please enter text", "error");
+      }
       return;
     }
 
     if (entries.length >= MAX_ENTRIES) {
-      showToast(`Maximum ${MAX_ENTRIES} entries allowed`, "error");
+      if (window.FlipMasterUI) {
+        window.FlipMasterUI.showToast(
+          `Maximum ${MAX_ENTRIES} entries allowed`,
+          "error"
+        );
+      }
       return;
     }
 
     if (entries.includes(text)) {
-      showToast("This entry already exists", "error");
+      if (window.FlipMasterUI) {
+        window.FlipMasterUI.showToast("This entry already exists", "error");
+      }
       return;
     }
 
     entries.push(text);
     saveEntries();
     renderEntriesList();
-    if (entryInput) entryInput.value = "";
-    if (entryInput) entryInput.focus();
+    entryInput.value = "";
+    entryInput.focus();
 
-    showToast(`"${text}" added!`, "success");
+    if (window.FlipMasterUI) {
+      window.FlipMasterUI.showToast(`"${text}" added!`, "success");
+    }
   }
 
   /**
@@ -231,7 +258,12 @@
    */
   function removeEntry(index) {
     if (entries.length <= 2) {
-      showToast("Keep at least 2 entries", "error");
+      if (window.FlipMasterUI) {
+        window.FlipMasterUI.showToast(
+          "Keep at least 2 entries",
+          "error"
+        );
+      }
       return;
     }
 
@@ -239,14 +271,21 @@
     entries.splice(index, 1);
     saveEntries();
     renderEntriesList();
-    showToast(`"${removed}" removed`, "success");
+
+    if (window.FlipMasterUI) {
+      window.FlipMasterUI.showToast(`"${removed}" removed`, "success");
+    }
   }
 
   /**
    * Reset to default entries
    */
   function resetEntries() {
-    if (!confirm("Reset wheel to default Yes/No entries? This will remove all custom entries.")) {
+    if (
+      !confirm(
+        "Reset wheel to default Yes/No entries? This will remove all custom entries."
+      )
+    ) {
       return;
     }
 
@@ -254,12 +293,15 @@
     currentRotation = 0;
     saveEntries();
     renderEntriesList();
-    if (resultEl) resultEl.textContent = "";
-    showToast("Wheel reset to defaults", "success");
+    resultEl.textContent = "";
+
+    if (window.FlipMasterUI) {
+      window.FlipMasterUI.showToast("Wheel reset to defaults", "success");
+    }
   }
 
   /**
-   * Get the currently selected entry at the top of the wheel
+   * Get the currently selected entry (top of wheel)
    */
   function getSelectedEntry() {
     const normalizedRotation = ((currentRotation % 360) + 360) % 360;
@@ -270,60 +312,47 @@
   }
 
   /**
-   * Show toast notification (uses FlipMasterUI if available)
-   */
-  function showToast(message, type = "default") {
-    if (window.FlipMasterUI && window.FlipMasterUI.showToast) {
-      window.FlipMasterUI.showToast(message, type);
-    } else {
-      // Fallback: simple alert
-      console.log(`Toast [${type}]: ${message}`);
-    }
-  }
-
-  /**
    * Spin the wheel
    */
   function spinWheel() {
     if (isSpinning || entries.length < 2) return;
 
     isSpinning = true;
-    if (spinBtn) spinBtn.disabled = true;
-    if (resultEl) resultEl.textContent = "";
+    spinBtn.disabled = true;
+    resultEl.textContent = "";
 
-    // Handle reduced motion preference
     if (prefersReducedMotion) {
-      const spinAmount = (1 + Math.random() * 0.5) * 360;
+      // No animation, just pick a result
+      const minSpins = 1;
+      const spinAmount = (minSpins + Math.random() * 0.5) * 360;
       currentRotation += spinAmount;
-      if (resultEl) resultEl.textContent = `🎡 ${getSelectedEntry()}`;
+      resultEl.textContent = `🎡 ${getSelectedEntry()}`;
       isSpinning = false;
-      if (spinBtn) spinBtn.disabled = false;
+      spinBtn.disabled = false;
       drawWheel();
       return;
     }
 
     // Check if GSAP is available
     if (typeof gsap === "undefined") {
-      console.error("Wheel: GSAP library not loaded");
-      showToast("Animation library not loaded. Please refresh the page.", "error");
+      console.error("🎡 ERROR: GSAP library not loaded!");
+      alert("Wheel animation library not loaded. Please refresh the page.");
       isSpinning = false;
-      if (spinBtn) spinBtn.disabled = false;
+      spinBtn.disabled = false;
       return;
     }
 
-    // Calculate spin rotation (5-8 full spins + random final position)
+    // Spin: 5-8 full rotations + random final position
     const minSpins = 5;
     const maxSpins = 8;
     const randomSpins = minSpins + Math.random() * (maxSpins - minSpins);
     const finalRandomDegrees = Math.random() * 360;
     const totalRotation = randomSpins * 360 + finalRandomDegrees;
 
-    // Play throw sound
-    if (window.FlipMasterSound && window.FlipMasterSound.playThrow) {
+    if (window.FlipMasterSound) {
       window.FlipMasterSound.playThrow();
     }
 
-    // Animate the spin using GSAP
     gsap.to(
       { rotation: currentRotation },
       {
@@ -336,12 +365,67 @@
         },
         onComplete: () => {
           const winner = getSelectedEntry();
-          if (resultEl) resultEl.textContent = `🎡 ${winner}`;
-
-          // Play land sound
-          if (window.FlipMasterSound && window.FlipMasterSound.playLand) {
+          resultEl.textContent = `🎡 ${winner}`;
+          if (window.FlipMasterSound) {
             window.FlipMasterSound.playLand();
           }
-
           isSpinning = false;
-          if (spinBtn)
+          spinBtn.disabled = false;
+        },
+      }
+    );
+  }
+
+  /**
+   * Event listeners
+   */
+  if (spinBtn) {
+    spinBtn.addEventListener("click", spinWheel);
+  }
+
+  if (addEntryBtn) {
+    addEntryBtn.addEventListener("click", () => {
+      addEntry(entryInput.value);
+    });
+  }
+
+  if (entryInput) {
+    entryInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        addEntry(entryInput.value);
+      }
+    });
+  }
+
+  if (resetWheelBtn) {
+    resetWheelBtn.addEventListener("click", resetEntries);
+  }
+
+  // Click wheel to spin (like coin)
+  if (canvas) {
+    canvas.addEventListener("click", spinWheel);
+  }
+
+  /**
+   * Initialize
+   */
+  document.addEventListener("DOMContentLoaded", () => {
+    console.log("🎡 DOM loaded, initializing wheel...");
+    loadEntries();
+    renderEntriesList();
+    console.log("✅ Wheel initialized successfully!");
+  });
+
+  // Also initialize if DOM is already loaded
+  if (document.readyState === "loading") {
+    console.log("🎡 Waiting for DOMContentLoaded...");
+  } else {
+    console.log("🎡 DOM already loaded, initializing immediately...");
+    loadEntries();
+    renderEntriesList();
+    console.log("✅ Wheel initialized successfully!");
+  }
+
+  window.FlipMasterWheel = { spin: spinWheel, addEntry, removeEntry, getEntries: () => entries.slice() };
+  console.log("✅ FlipMasterWheel API ready");
+})();
